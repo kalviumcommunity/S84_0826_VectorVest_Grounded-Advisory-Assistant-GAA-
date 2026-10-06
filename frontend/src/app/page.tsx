@@ -223,7 +223,18 @@ export default function ChatPage() {
             </strong>
           );
         }
-        return <span key={`t-${index}-${bIdx}`}>{bPart}</span>;
+        // Handle code spans `code`
+        const codeParts = bPart.split(/(`[^`]+`)/g);
+        return codeParts.map((cPart, cIdx) => {
+          if (cPart.startsWith("`") && cPart.endsWith("`")) {
+            return (
+              <code key={`c-${index}-${bIdx}-${cIdx}`} className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-white/10 text-gold-300 border border-white/10 mx-0.5">
+                {cPart.slice(1, -1)}
+              </code>
+            );
+          }
+          return <span key={`t-${index}-${bIdx}-${cIdx}`}>{cPart}</span>;
+        });
       });
     });
   };
@@ -298,8 +309,26 @@ export default function ChatPage() {
         return;
       }
 
-      // Markdown Headings
-      if (trimmed.startsWith("### ")) {
+      // Markdown Headings & Structure
+      if (trimmed.startsWith("#### ")) {
+        if (currentList.length > 0) {
+          elements.push(
+            <ul key={`ul-${idx}`} className="space-y-1.5 my-2 pl-1">
+              {currentList}
+            </ul>
+          );
+          currentList = [];
+        }
+        elements.push(
+          <h4
+            key={`h4-${idx}`}
+            className="font-heading font-bold text-gold-200 text-xs sm:text-[13px] mt-3.5 mb-1 flex items-center gap-1.5 tracking-wide"
+          >
+            <Sparkles className="h-3 w-3 text-gold-400 shrink-0" />
+            <span>{trimmed.replace(/^####\s+/, "")}</span>
+          </h4>
+        );
+      } else if (trimmed.startsWith("### ")) {
         if (currentList.length > 0) {
           elements.push(
             <ul key={`ul-${idx}`} className="space-y-1.5 my-2 pl-1">
@@ -311,7 +340,7 @@ export default function ChatPage() {
         elements.push(
           <h3
             key={`h3-${idx}`}
-            className="font-heading font-bold text-gold-300 text-xs sm:text-sm mt-3.5 mb-1.5 flex items-center gap-1.5 tracking-wide"
+            className="font-heading font-bold text-gold-300 text-xs sm:text-sm mt-4 mb-1.5 flex items-center gap-1.5 tracking-wide"
           >
             <Sparkles className="h-3.5 w-3.5 text-gold-400 shrink-0" />
             <span>{trimmed.replace(/^###\s+/, "")}</span>
@@ -351,6 +380,35 @@ export default function ChatPage() {
             {trimmed.replace(/^#\s+/, "")}
           </h1>
         );
+      } else if (trimmed === "---" || trimmed === "***") {
+        if (currentList.length > 0) {
+          elements.push(
+            <ul key={`ul-${idx}`} className="space-y-1.5 my-2 pl-1">
+              {currentList}
+            </ul>
+          );
+          currentList = [];
+        }
+        elements.push(
+          <div key={`hr-${idx}`} className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent my-3.5" />
+        );
+      } else if (trimmed.startsWith("> ")) {
+        if (currentList.length > 0) {
+          elements.push(
+            <ul key={`ul-${idx}`} className="space-y-1.5 my-2 pl-1">
+              {currentList}
+            </ul>
+          );
+          currentList = [];
+        }
+        elements.push(
+          <div
+            key={`quote-${idx}`}
+            className="border-l-2 border-gold-400/80 bg-gold-500/10 px-3.5 py-2 my-2 rounded-r-xl text-slate-200 text-xs sm:text-[12.5px] font-sans leading-relaxed shadow-sm"
+          >
+            {renderInlineFormatted(trimmed.replace(/^>\s*/, ""), citations)}
+          </div>
+        );
       } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
         const itemText = trimmed.replace(/^[-*•]\s+/, "");
         currentList.push(
@@ -377,7 +435,7 @@ export default function ChatPage() {
         elements.push(
           <div
             key={`num-${idx}`}
-            className="flex items-start gap-2.5 my-1.5 text-slate-200 text-xs sm:text-[13px] leading-relaxed"
+            className="flex items-start gap-2.5 my-2 text-slate-200 text-xs sm:text-[13px] leading-relaxed"
           >
             <span className="font-condensed font-bold text-[11px] px-1.5 py-0.5 rounded bg-gold-500/15 text-gold-400 border border-gold-500/30 shrink-0 mt-0.5">
               {num}

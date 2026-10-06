@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # LLM (Groq)
     LLM_PROVIDER: str = "groq"
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "openai/gpt-oss-20b"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
 
     # Upload Limits
     MAX_UPLOAD_SIZE_BYTES: int = 25 * 1024 * 1024  # 25 MB
